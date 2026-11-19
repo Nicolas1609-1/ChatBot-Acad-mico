@@ -32,7 +32,7 @@ Chatbot Academico y Sistemas - Actualizar noticias UNAB estan publicados. Los wo
 ## Aplazado por el usuario
 FastMCP: codigo y dependencias instalados, pero sin DATABASE_URL ni servicio activo; no conectado al agente.
 Aplicación móvil: retomada el 18/11 en app-movil/ (Expo). Usa el mismo servidor y agente; ver app-movil/README.md.
-Video: aplazado hasta aprobar el diseno.
+Video: grabado el 18/11, ver docs/video/demo-chatbot-academico.mp4.
 
 No volver a ejecutar semillas o reindexaciones con cada consulta.
 

@@ -59,3 +59,5 @@ Credencial Bearer Auth validada por n8n. Cliente MCP habilitado y flujo principa
 - Verificado por HTTPS con U00100012: proximo semestre (S602, S603, S604, S703, S701; 18 creditos), promedio 4.09/54/49.09 %, noticias y calendario 2027-1.
 - Respaldo del flujo con estos cambios: 28_respaldo_ajustes_18nov.json.
 - Limite Groq 8000 TPM sigue vigente: preguntas muy seguidas pueden recibir el aviso de indisponibilidad.
+
+- Video de demostracion grabado sobre el portal real (U00100012, seis preguntas, ~3 min): docs/video/demo-chatbot-academico.mp4. README con capturas en docs/img.
