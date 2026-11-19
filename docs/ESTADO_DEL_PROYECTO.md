@@ -61,3 +61,4 @@ Credencial Bearer Auth validada por n8n. Cliente MCP habilitado y flujo principa
 - Limite Groq 8000 TPM sigue vigente: preguntas muy seguidas pueden recibir el aviso de indisponibilidad.
 
 - Video de demostracion grabado sobre el portal real (U00100012, seis preguntas, ~3 min): docs/video/demo-chatbot-academico.mp4. README con capturas en docs/img.
+- 19/11: el calendario cita siempre el enlace de la hoja (version 5522aab4). Repositorio: github.com/Nicolas1609-1/ChatBot-Acad-mico.
