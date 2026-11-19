@@ -12,7 +12,7 @@ Las respuestas no se las inventa el modelo de lenguaje: **cada dato sale de una 
 ![Expo](https://img.shields.io/badge/App-Expo%20%2F%20React%20Native-000020?logo=expo&logoColor=white)
 
 > **Pruébalo:** https://academico.nicolas16.life/ con el código `U00100012`.
-> **Video completo:** [▶ ver en el navegador](https://cdn.jsdelivr.net/gh/Nicolas1609-1/ChatBot@main/docs/video/demo-chatbot-academico.mp4) · **Informe técnico:** [Informe_final_Chatbot_Academico.pdf](Informe_final_Chatbot_Academico.pdf)
+> **Video completo:** [▶ ver en el navegador](https://cdn.jsdelivr.net/gh/Nicolas1609-1/ChatBot@main/docs/video/demo-chatbot-academico.mp4) · **Informe técnico:** [Informe_final_Chatbot_Academico.pdf](docs/Informe_final_Chatbot_Academico.pdf)
 
 ![Demo del chatbot](docs/img/demo.gif)
 
@@ -222,7 +222,7 @@ erDiagram
 - **`v_materias_pendientes`**: materias sin aprobar y si sus prerrequisitos ya se cumplen.
 - **`proyectar_semestres(codigo, 18)`**: algoritmo voraz que llena cada periodo con materias elegibles hasta 18 créditos, y solo da por cumplido un prerrequisito si se aprobó en un periodo **anterior**. Es una simulación factible, no garantiza el mínimo de semestres.
 
-Scripts: [`01_base_academica.sql`](01_base_academica.sql), [`07_proyeccion_semestres.sql`](07_proyeccion_semestres.sql), [`21_codigos_estudiante.sql`](21_codigos_estudiante.sql), [`24_tres_estudiantes.sql`](24_tres_estudiantes.sql).
+Scripts: [`database/01_base_academica.sql`](database/01_base_academica.sql), [`02_proyeccion_semestres.sql`](database/02_proyeccion_semestres.sql), [`05_codigos_estudiante.sql`](database/05_codigos_estudiante.sql), [`06_tres_estudiantes.sql`](database/06_tres_estudiantes.sql).
 
 ### 6.3 RAG: que el bot lea los documentos del profesor
 
@@ -236,7 +236,7 @@ RAG (*Retrieval-Augmented Generation*) = buscar primero los fragmentos relevante
 
 Regla del prompt: máximo **una búsqueda RAG por mensaje**, para no gastar la cuota.
 
-Archivos: [`06_ingesta_rag.json`](06_ingesta_rag.json) (flujo de indexación), [`16_estructura_vectores.sql`](16_estructura_vectores.sql).
+Archivos: [`ingesta_rag.json`](n8n/ingesta_rag.json) (flujo de indexación), [`04_estructura_vectores.sql`](database/04_estructura_vectores.sql).
 
 ### 6.4 MCP: herramientas propias, estándar y seguras
 
@@ -299,10 +299,10 @@ Esta sección es la más útil para aprender: el bot "funcionaba", pero al revis
 
 Necesitas: una cuenta de **n8n** (Cloud o self-hosted), **PostgreSQL con pgvector** (por ejemplo Supabase), una API key de **Groq**, una credencial de **Google Sheets** y, para el portal, un servidor con Python 3.
 
-1. Crea la base: ejecuta [`01_base_academica.sql`](01_base_academica.sql), luego [`07_proyeccion_semestres.sql`](07_proyeccion_semestres.sql), [`15_estructura_noticias.sql`](15_estructura_noticias.sql), [`16_estructura_vectores.sql`](16_estructura_vectores.sql), [`21_codigos_estudiante.sql`](21_codigos_estudiante.sql) y [`24_tres_estudiantes.sql`](24_tres_estudiantes.sql).
+1. Crea la base: ejecuta [`database/01_base_academica.sql`](database/01_base_academica.sql), luego [`02_proyeccion_semestres.sql`](database/02_proyeccion_semestres.sql), [`03_estructura_noticias.sql`](database/03_estructura_noticias.sql), [`04_estructura_vectores.sql`](database/04_estructura_vectores.sql), [`05_codigos_estudiante.sql`](database/05_codigos_estudiante.sql) y [`06_tres_estudiantes.sql`](database/06_tres_estudiantes.sql).
 2. En n8n importa los flujos (*Import from file*):
-   - [`28_respaldo_ajustes_18nov.json`](28_respaldo_ajustes_18nov.json) → chatbot principal (versión más reciente).
-   - [`06_ingesta_rag.json`](06_ingesta_rag.json), [`08_noticias_unab.json`](08_noticias_unab.json), [`09_calendario_demo.json`](09_calendario_demo.json).
+   - [`chatbot_academico.json`](n8n/chatbot_academico.json) → chatbot principal (versión más reciente).
+   - [`ingesta_rag.json`](n8n/ingesta_rag.json), [`noticias_unab.json`](n8n/noticias_unab.json), [`calendario_demo.json`](n8n/calendario_demo.json).
 3. Asigna tus credenciales: PostgreSQL, Groq como *OpenAI* con base URL `https://api.groq.com/openai/v1`, y Google Sheets. Los JSON **no traen claves** y el `webhookId` está oculto: n8n genera uno nuevo.
 4. Ejecuta una vez la indexación RAG (debe dejar 96 fragmentos) y el flujo de noticias.
 5. Prueba el chat desde n8n; cuando responda bien, **publica** el flujo.
@@ -310,17 +310,31 @@ Necesitas: una cuenta de **n8n** (Cloud o self-hosted), **PostgreSQL con pgvecto
 
 ## 9. Estructura del repositorio
 
-| Ruta | Contenido |
+```
+ChatBot/
+├── README.md              ← estás aquí
+├── app-movil/             App Android con Expo / React Native
+├── database/              Scripts SQL, numerados en orden de ejecución
+├── docs/                  Informe PDF, documentación, capturas, video y evidencias
+│   ├── bitacora/          Notas del proceso día a día
+│   ├── img/ · video/      Material de este README
+│   └── verificacion/      Resultados de pruebas y capturas de verificación
+├── mcp-server/            Servidor FastMCP (Python) de solo lectura
+├── n8n/                   Flujos de n8n para importar (sin claves)
+│   └── historial/         Versiones anteriores del chatbot
+├── pc/                    Portal web (dist/) y proxy server.py
+└── rag-fuentes/           Documentos que lee el RAG
+```
+
+| Carpeta | Para qué sirve |
 |---|---|
-| `01`–`28_*` | SQL, fuentes RAG, respaldos de flujos n8n y bitácora numerada del proceso |
-| [`pc/`](pc/) | Portal web (`dist/`), proxy `server.py` y pruebas |
-| [`app-movil/`](app-movil/) | App Expo / React Native |
-| [`mcp-server/`](mcp-server/) | Servidor FastMCP, rol de solo lectura y pruebas |
-| [`docs/`](docs/) | Capturas y video de este README |
-| [`verificacion/`](verificacion/) | Evidencias y resultados de pruebas |
-| [`10_DOCUMENTACION_TECNICA.md`](10_DOCUMENTACION_TECNICA.md) | Documentación técnica detallada |
-| [`ESTADO_DEL_PROYECTO.md`](ESTADO_DEL_PROYECTO.md) | Estado y cambios por fecha |
-| [`Informe_final_Chatbot_Academico.pdf`](Informe_final_Chatbot_Academico.pdf) | Informe técnico y manual de operación |
+| [`database/`](database/) | Crear la base: ejecuta los `.sql` del 01 al 06 en orden |
+| [`n8n/`](n8n/) | Importar los flujos; el principal es `chatbot_academico.json` |
+| [`rag-fuentes/`](rag-fuentes/) | FAQ y propuesta del profesor, y reglas del escenario demo |
+| [`pc/`](pc/) | Interfaz web y proxy que protege el acceso a n8n |
+| [`app-movil/`](app-movil/) | App móvil que usa el mismo servidor |
+| [`mcp-server/`](mcp-server/) | Herramientas MCP con usuario de PostgreSQL de solo lectura |
+| [`docs/`](docs/) | [Informe final](docs/Informe_final_Chatbot_Academico.pdf), [documentación técnica](docs/DOCUMENTACION_TECNICA.md), [estado del proyecto](docs/ESTADO_DEL_PROYECTO.md) |
 
 ## 10. Seguridad y límites
 
