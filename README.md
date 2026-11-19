@@ -12,13 +12,13 @@ Las respuestas no se las inventa el modelo de lenguaje: **cada dato sale de una 
 ![Expo](https://img.shields.io/badge/App-Expo%20%2F%20React%20Native-000020?logo=expo&logoColor=white)
 
 > **Pruébalo:** https://academico.nicolas16.life/ con el código `U00100012`.
-> **Video completo:** [▶ ver en el navegador](https://cdn.jsdelivr.net/gh/Nicolas1609-1/ChatBot@main/docs/video/demo-chatbot-academico.mp4) · **Informe técnico:** [Informe_final_Chatbot_Academico.pdf](docs/Informe_final_Chatbot_Academico.pdf)
+> **Video completo:** [▶ ver en el navegador](https://cdn.jsdelivr.net/gh/Nicolas1609-1/ChatBot-Acad-mico@main/docs/video/demo-chatbot-academico.mp4) · **Informe técnico:** [Informe_final_Chatbot_Academico.pdf](docs/Informe_final_Chatbot_Academico.pdf)
 
 ![Demo del chatbot](docs/img/demo.gif)
 
 ### 🎬 Video de demostración
 
-[![Ver el video de demostración](docs/img/video-portada.png)](https://cdn.jsdelivr.net/gh/Nicolas1609-1/ChatBot@main/docs/video/demo-chatbot-academico.mp4)
+[![Ver el video de demostración](docs/img/video-portada.png)](https://cdn.jsdelivr.net/gh/Nicolas1609-1/ChatBot-Acad-mico@main/docs/video/demo-chatbot-academico.mp4)
 
 Haz clic en la imagen para reproducirlo (3 min, sin audio, con subtítulos). Recorrido real por el portal con el estudiante Mateo: promedio, próximo semestre, proyección, calendario, documentos del profesor y noticias. Si prefieres descargarlo: [`docs/video/demo-chatbot-academico.mp4`](docs/video/demo-chatbot-academico.mp4).
 
