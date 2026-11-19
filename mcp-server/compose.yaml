@@ -1,0 +1,21 @@
+services:
+  mcp-academico:
+    build: .
+    env_file: .env
+    environment:
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 9000
+    ports:
+      - "127.0.0.1:9000:9000"
+    secrets:
+      - postgres_ca
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+secrets:
+  postgres_ca:
+    file: ./postgres-ca.crt

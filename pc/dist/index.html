@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistemas · Apoyo académico</title><meta name="description" content="Asistente de apoyo académico de Ingeniería de Sistemas. Consulta tu expediente, avance y ruta académica.">
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="theme-coral.css"><link rel="stylesheet" href="glass.css"><script type="module" src="app.js"></script></head>
+<body>
+<section id="student-gate" class="student-gate"><form id="student-form" class="student-card">
+<div class="eyebrow">SISTEMAS · TU ESPACIO ACADÉMICO</div><div class="gate-symbol">S↗</div>
+<h1>Todo empieza<br>con <em>tu código.</em></h1><p>Encuentra tu expediente y planea lo que viene.</p>
+<label for="student-code">Código de estudiante</label><input id="student-code" name="codigo" placeholder="U00100001" pattern="[Uu]00[0-9]{6}" maxlength="9" required autocomplete="off" spellcheck="false" aria-describedby="code-help student-error">
+<small id="code-help">U00 seguido de seis números.</small><p id="student-error" role="alert"></p><button id="identify" class="primary" type="submit">Entrar a mi espacio ↗</button>
+
+<p class="gate-note">Datos simulados para el proyecto académico.</p></form></section>
+<div class="layout" id="academic-layout" hidden>
+<aside class="sidebar" aria-label="Proyecto">
+  <a class="brand" href="./" aria-label="Sistemas, inicio"><span class="brand-icon">S<span>↗</span></span><span>Sistemas<small>APOYO ACADÉMICO</small></span></a>
+  <div class="project-pill"><span class="dot"></span> Apoyo académico</div>
+  <button class="new-chat" id="new-chat" title="Nueva conversación"><span>＋</span> Nueva conversación</button>
+  <p class="nav-label">TU ESPACIO</p>
+  <div class="nav-item active" title="Asistente académico"><span>◫</span> Asistente académico</div>
+  <button class="nav-item" id="sources" title="Fuentes del proyecto"><span>▤</span> Fuentes del proyecto</button>
+  <button class="nav-item" id="scope" title="Alcance y datos"><span>ⓘ</span> Alcance y datos</button>
+  <div class="sidebar-bottom"><div class="sidebar-note"><span class="small-cap">UN SOLO ASISTENTE</span><p>Tu avance, tus próximos pasos y la información que necesitas.</p></div>
+  <a class="external" title="Abrir flujo en n8n" href="https://nicolas16.app.n8n.cloud/workflow/D8bc4f0Jt7tgJzeU" target="_blank" rel="noopener noreferrer">Abrir flujo en n8n <span>↗</span></a></div>
+</aside>
+<main>
+<header class="topbar"><span class="breadcrumb">Ingeniería de Sistemas <span>/</span> Asistente</span><button class="connection" id="connect"><span class="status-dot" id="status-dot"></span><span id="status">Configurar conexión</span><span>⚙</span></button></header>
+<div class="workspace">
+  <div class="notice"><span class="notice-icon">i</span><p><strong>Un espacio para aprender y planear.</strong> Consulta tu avance y organiza tus próximos semestres.</p></div>
+  <div class="student-heading"><span id="student-summary"></span><button id="change-student" class="secondary">Cambiar estudiante ↗</button></div>
+  <section id="welcome" class="welcome" aria-labelledby="welcome-title">
+    <div class="eyebrow"><span class="spark">✧</span> TU PANEL ACADÉMICO</div>
+    <h1 id="welcome-title">Tu espacio <em>académico.</em></h1>
+    <p class="intro">Consulta tu avance, entiende los prerrequisitos y organiza<br class="desktop-break"> lo que viene en tu carrera.</p>
+    <div class="metrics" aria-label="Tu expediente académico">
+<div class="metric featured"><span class="metric-label">Semestre actual ↗</span><strong id="profile-semester">—</strong><small id="profile-enrollment">—</small></div>
+<div class="metric"><span class="metric-label">Promedio histórico</span><strong id="profile-gpa">—</strong><small>Ponderado por créditos</small></div>
+<div class="metric"><span class="metric-label">Créditos aprobados</span><strong id="profile-credits">—</strong><small id="profile-total">—</small></div>
+<div class="metric"><span class="metric-label">Avance del plan</span><strong id="profile-progress">—</strong><small>Avance en créditos</small></div></div>
+    <div class="section-heading"><h2>¿Qué necesitas consultar?</h2><span>ELIGE POR DÓNDE EMPEZAR</span></div>
+    <div class="cards">
+      <button class="suggestion" data-prompt="¿Cuál es mi promedio y mi avance académico?"><span class="card-icon teal">↗</span><strong>Mi avance académico</strong><span>Promedio, créditos y estado de matrícula.</span><span class="card-arrow">↗</span></button>
+      <button class="suggestion" data-prompt="¿Cuántos semestres me faltan? Explica los supuestos de la simulación."><span class="card-icon blue">≋</span><strong>Planear mis semestres</strong><span>Una ruta que respeta tus prerrequisitos.</span><span class="card-arrow">↗</span></button>
+      <button class="suggestion" data-prompt="¿Cuándo comienzan las clases del periodo 2027-1 según el calendario académico?"><span class="card-icon gold">▦</span><strong>Consultar el calendario</strong><span>Inscripciones e inicio de clases.</span><span class="card-arrow">↗</span></button>
+    </div>
+    <div class="example"><span class="example-icon">◉</span><span>Tu expediente ya está seleccionado. Pregunta por tu historial, créditos o próximos semestres.</span></div>
+  </section>
+  <section id="messages" class="messages" aria-label="Conversación" aria-live="polite" aria-relevant="additions"></section>
+  <div id="waiting" class="waiting" hidden><span class="waiting-dot"></span> Consultando las fuentes en n8n…</div>
+  <div class="composer-area">
+    <div id="feedback" class="feedback" role="status"></div>
+    <form id="composer" class="composer"><label class="sr-only" for="question">Tu consulta académica</label><textarea id="question" maxlength="6000" rows="2" placeholder="Escribe tu consulta académica…"></textarea><div class="composer-bottom"><span>✧ <span id="composer-help">Respuestas apoyadas en fuentes</span></span><div><span id="counter">0 / 6000</span><button id="cancel" type="button" hidden>Cancelar</button><button id="send" class="send" type="submit" aria-label="Enviar consulta">Enviar <span>↑</span></button></div></div></form>
+    <p class="footer">Verifica las decisiones académicas con tu programa. Datos simulados · Orientación académica.</p>
+  </div>
+</div>
+</main>
+</div>
+<dialog id="connection-dialog"><form id="connection-form">
+  <div class="dialog-heading"><span class="eyebrow">CONEXIÓN DEL PROYECTO</span><button type="button" class="close" data-close="connection-dialog" aria-label="Cerrar">×</button></div>
+  <h2>Conecta tu asistente</h2><p>Usa la <strong>Chat URL</strong> de n8n, terminada en <code>/chat</code>. No uses la dirección del editor ni pegues claves API.</p>
+  <label for="endpoint">URL HTTPS del chat</label><input id="endpoint" type="url" placeholder="https://tu-instancia/webhook/…/chat" autocomplete="off" spellcheck="false" required>
+  <p class="field-note">Se guarda solo en este navegador. Cambiar la URL inicia una conversación nueva. El chat debe estar publicado.</p>
+  <p id="connection-error" class="field-error" role="alert"></p>
+  <div class="dialog-actions"><button type="button" class="secondary" data-close="connection-dialog">Cancelar</button><button class="primary" type="submit">Guardar conexión</button></div>
+</form></dialog>
+<dialog id="info-dialog"><div class="dialog-heading"><span class="eyebrow" id="info-label">PROYECTO</span><button type="button" class="close" data-close="info-dialog" aria-label="Cerrar">×</button></div><h2 id="info-title"></h2><div id="info-content" class="info-content"></div><div class="dialog-actions"><button class="primary" data-close="info-dialog">Entendido</button></div></dialog>
+</body></html>

@@ -1,0 +1,55 @@
+{
+  "name": "Preparar Base Academica Demo",
+  "nodes": [
+    {
+      "id": "2e82a033-7a84-43c2-89ff-3dbd020ffed6",
+      "name": "Iniciar carga de demostracion",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "af4ccdfb-ff82-4736-8e4c-a8a6659c4edf",
+      "name": "Crear base academica ficticia",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- PROTOTIPO: todos los nombres, notas, periodos y reglas son ficticios.\n-- Plan simplificado de demostracion; NO es el plan oficial de una universidad.\n-- Ejecutar en SQL Editor de un proyecto PostgreSQL/Supabase nuevo.\nBEGIN;\nCREATE SCHEMA IF NOT EXISTS academico_demo;\nCOMMENT ON SCHEMA academico_demo IS 'Datos sinteticos de Ingenieria de Sistemas. No oficiales.';\n\nCREATE TABLE IF NOT EXISTS academico_demo.estudiantes (\n codigo text PRIMARY KEY,\n nombre text NOT NULL,\n programa text NOT NULL DEFAULT 'Ingenieria de Sistemas'\n   CHECK (programa = 'Ingenieria de Sistemas'),\n semestre_actual integer NOT NULL CHECK (semestre_actual BETWEEN 1 AND 8),\n es_sintetico boolean NOT NULL DEFAULT true CHECK (es_sintetico)\n);\nCREATE TABLE IF NOT EXISTS academico_demo.materias (\n codigo text PRIMARY KEY,\n nombre text NOT NULL,\n semestre integer NOT NULL CHECK (semestre BETWEEN 1 AND 8),\n creditos integer NOT NULL CHECK (creditos BETWEEN 1 AND 6)\n);\nCREATE TABLE IF NOT EXISTS academico_demo.prerrequisitos (\n materia text REFERENCES academico_demo.materias(codigo),\n requisito text REFERENCES academico_demo.materias(codigo),\n PRIMARY KEY (materia,requisito),\n CHECK (materia <> requisito)\n);\nCREATE TABLE IF NOT EXISTS academico_demo.matriculas (\n estudiante text REFERENCES academico_demo.estudiantes(codigo),\n periodo text NOT NULL,\n estado text NOT NULL CHECK (estado IN ('activa','pendiente','inactiva')),\n PRIMARY KEY (estudiante,periodo)\n);\nCREATE TABLE IF NOT EXISTS academico_demo.historial (\n estudiante text NOT NULL,\n periodo text NOT NULL,\n materia text REFERENCES academico_demo.materias(codigo),\n nota numeric(3,2) CHECK (nota BETWEEN 0 AND 5),\n estado text NOT NULL CHECK (estado IN ('aprobada','reprobada','en_curso')),\n PRIMARY KEY (estudiante,periodo,materia),\n FOREIGN KEY (estudiante,periodo) REFERENCES academico_demo.matriculas(estudiante,periodo),\n CHECK ((estado='en_curso' AND nota IS NULL)\n     OR (estado='aprobada' AND nota >= 3)\n     OR (estado='reprobada' AND nota < 3))\n);\n\nINSERT INTO academico_demo.materias VALUES\n ('S101','Fundamentos de programacion',1,4),('S102','Matematicas discretas',1,3),\n ('S103','Calculo diferencial',1,4),('S104','Comunicacion academica',1,2),\n ('S201','Programacion orientada a objetos',2,4),('S202','Algebra lineal',2,3),\n ('S203','Calculo integral',2,4),('S204','Introduccion a la ingenieria',2,2),\n ('S301','Estructuras de datos',3,4),('S302','Bases de datos I',3,4),\n ('S303','Probabilidad y estadistica',3,3),('S304','Arquitectura de computadores',3,3),\n ('S401','Analisis de algoritmos',4,4),('S402','Bases de datos II',4,4),\n ('S403','Sistemas operativos',4,3),('S404','Ingenieria de software I',4,3),\n ('S501','Desarrollo web',5,4),('S502','Redes de computadores',5,3),\n ('S503','Ingenieria de software II',5,4),('S504','Investigacion aplicada',5,2),\n ('S601','Inteligencia artificial',6,4),('S602','Sistemas distribuidos',6,4),\n ('S603','Seguridad informatica',6,3),('S604','Desarrollo movil',6,3),\n ('S701','Ciencia de datos',7,4),('S702','Computacion en la nube',7,3),\n ('S703','Proyecto de grado I',7,4),('S704','Gestion de proyectos',7,3),\n ('S801','Proyecto de grado II',8,4),('S802','Practica profesional',8,6),\n ('S803','Etica profesional',8,2),('S804','Electiva de sistemas',8,3)\nON CONFLICT DO NOTHING;\n\nINSERT INTO academico_demo.prerrequisitos VALUES\n ('S201','S101'),('S203','S103'),('S301','S201'),('S302','S201'),\n ('S303','S202'),('S304','S102'),('S401','S301'),('S402','S302'),\n ('S403','S304'),('S404','S201'),('S501','S302'),('S501','S404'),\n ('S502','S403'),('S503','S404'),('S601','S401'),('S601','S303'),\n ('S602','S502'),('S603','S502'),('S604','S501'),('S701','S601'),\n ('S701','S402'),('S702','S602'),('S703','S504'),('S703','S503'),\n ('S704','S503'),('S801','S703'),('S802','S503'),('S804','S601')\nON CONFLICT DO NOTHING;\n\nINSERT INTO academico_demo.estudiantes(codigo,nombre,semestre_actual) VALUES\n ('DEMO001','Ana Ejemplo',3),('DEMO002','Bruno Ejemplo',4),\n ('DEMO003','Carla Ejemplo',5),('DEMO004','Diego Ejemplo',2),\n ('DEMO005','Elena Ejemplo',6),('DEMO006','Felipe Ejemplo',7),\n ('DEMO007','Gabriela Ejemplo',1),('DEMO008','Hugo Ejemplo',8),\n ('DEMO009','Isabel Ejemplo',4),('DEMO010','Julian Ejemplo',5)\nON CONFLICT DO NOTHING;\n\n-- Periodos DEMO-S1..S8: orden didactico ficticio, no calendario oficial.\nINSERT INTO academico_demo.matriculas\nSELECT e.codigo,'DEMO-S'||s,\n CASE WHEN s=e.semestre_actual AND e.codigo='DEMO009' THEN 'pendiente' ELSE 'activa' END\nFROM academico_demo.estudiantes e\nCROSS JOIN LATERAL generate_series(1,e.semestre_actual) s\nON CONFLICT DO NOTHING;\n\nINSERT INTO academico_demo.historial\nSELECT e.codigo,'DEMO-S'||m.semestre,m.codigo,\n CASE WHEN m.semestre=e.semestre_actual THEN NULL\n      ELSE (3.2 + ((substring(e.codigo from 5)::integer + m.semestre) % 8)*0.2)::numeric(3,2) END,\n CASE WHEN m.semestre=e.semestre_actual THEN 'en_curso' ELSE 'aprobada' END\nFROM academico_demo.estudiantes e CROSS JOIN academico_demo.materias m\nWHERE m.semestre<=e.semestre_actual AND NOT\n (e.codigo='DEMO009' AND m.semestre=e.semestre_actual)\nON CONFLICT DO NOTHING;\n\n-- Caso con perdida y repeticion, sin cursar asignaturas bloqueadas.\nUPDATE academico_demo.historial SET nota=2.5,estado='reprobada'\nWHERE estudiante='DEMO001' AND materia='S201' AND periodo='DEMO-S2';\nDELETE FROM academico_demo.historial\nWHERE estudiante='DEMO001' AND materia IN ('S301','S302') AND periodo='DEMO-S3';\nINSERT INTO academico_demo.historial VALUES ('DEMO001','DEMO-S3','S201',NULL,'en_curso')\nON CONFLICT DO NOTHING;\n\nCREATE OR REPLACE VIEW academico_demo.v_resumen AS\nSELECT e.codigo,e.nombre,e.programa,e.semestre_actual,\n (SELECT estado FROM academico_demo.matriculas mt\n   WHERE mt.estudiante=e.codigo AND mt.periodo='DEMO-S'||e.semestre_actual) AS estado_matricula,\n (SELECT round(sum(h.nota*m.creditos)/nullif(sum(m.creditos),0),2)\n   FROM academico_demo.historial h JOIN academico_demo.materias m ON m.codigo=h.materia\n   WHERE h.estudiante=e.codigo AND h.estado<>'en_curso') AS promedio_historico,\n coalesce((SELECT sum(m.creditos) FROM academico_demo.materias m WHERE EXISTS\n   (SELECT 1 FROM academico_demo.historial h WHERE h.estudiante=e.codigo\n     AND h.materia=m.codigo AND h.estado='aprobada')),0) AS creditos_aprobados,\n (SELECT sum(creditos) FROM academico_demo.materias) AS creditos_plan,\n true AS datos_sinteticos\nFROM academico_demo.estudiantes e;\n\nCREATE OR REPLACE VIEW academico_demo.v_materias_pendientes AS\nSELECT e.codigo AS estudiante,m.codigo AS materia,m.nombre,m.semestre,m.creditos,\n EXISTS (SELECT 1 FROM academico_demo.historial h WHERE h.estudiante=e.codigo\n   AND h.materia=m.codigo AND h.estado='en_curso') AS en_curso,\n NOT EXISTS (SELECT 1 FROM academico_demo.prerrequisitos p\n   WHERE p.materia=m.codigo AND NOT EXISTS (\n     SELECT 1 FROM academico_demo.historial h WHERE h.estudiante=e.codigo\n       AND h.materia=p.requisito AND h.estado='aprobada')) AS prerrequisitos_cumplidos,\n ARRAY(SELECT p.requisito FROM academico_demo.prerrequisitos p\n   WHERE p.materia=m.codigo AND NOT EXISTS (\n     SELECT 1 FROM academico_demo.historial h WHERE h.estudiante=e.codigo\n       AND h.materia=p.requisito AND h.estado='aprobada') ORDER BY p.requisito) AS requisitos_pendientes\nFROM academico_demo.estudiantes e CROSS JOIN academico_demo.materias m\nWHERE NOT EXISTS (SELECT 1 FROM academico_demo.historial h WHERE h.estudiante=e.codigo\n  AND h.materia=m.codigo AND h.estado='aprobada');\n\n-- Mantener este esquema fuera de los esquemas expuestos por la Data API.\n-- Conexion prevista: Postgres desde n8n, con consultas parametrizadas.\nREVOKE ALL ON SCHEMA academico_demo FROM PUBLIC;\nCOMMIT;\n\n-- Comprobaciones esperadas: 10 estudiantes, 32 materias y 2 vistas.\nSELECT count(*) AS estudiantes FROM academico_demo.estudiantes;\nSELECT count(*) AS materias FROM academico_demo.materias;\nSELECT * FROM academico_demo.v_resumen ORDER BY codigo;\nSELECT * FROM academico_demo.v_materias_pendientes WHERE estudiante='DEMO001' ORDER BY semestre,materia;\n\r\n",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "UfHFFAGTlup2wpyy",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Iniciar carga de demostracion": {
+      "main": [
+        [
+          {
+            "node": "Crear base academica ficticia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "nodeGroups": []
+}

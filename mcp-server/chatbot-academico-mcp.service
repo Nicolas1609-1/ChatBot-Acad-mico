@@ -1,0 +1,19 @@
+[Unit]
+Description=FastMCP academico de solo lectura
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/nicolas/chatbot-academico/mcp-server
+EnvironmentFile=/home/nicolas/chatbot-academico/deploy/mcp.env
+ExecStart=/home/nicolas/chatbot-academico/mcp-server/.venv/bin/python server.py
+Restart=on-failure
+RestartSec=3
+UMask=0077
+NoNewPrivileges=true
+MemoryMax=512M
+TasksMax=32
+
+[Install]
+WantedBy=default.target

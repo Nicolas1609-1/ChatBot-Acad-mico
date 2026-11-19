@@ -1,0 +1,316 @@
+{
+  "name": "Sistemas - Actualizar noticias UNAB",
+  "nodes": [
+    {
+      "id": "70aa5be8-7d7d-49fd-b81a-acdf5f107510",
+      "name": "Actualizar noticias ahora",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "2c2ec0d7-7d55-4aec-a934-fa55aa0db687",
+      "name": "Preparar almacenamiento de noticias",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        224,
+        96
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS academico_demo.noticias (\n wp_id bigint PRIMARY KEY,\n titulo text NOT NULL CHECK(length(titulo) BETWEEN 1 AND 500),\n resumen text NOT NULL DEFAULT '',\n url text NOT NULL UNIQUE CHECK(url ~ '^https://unab[.]edu[.]co/'),\n publicada_en timestamptz NOT NULL,\n modificada_en timestamptz NOT NULL,\n consultada_en timestamptz NOT NULL DEFAULT now(),\n categoria text NOT NULL DEFAULT 'Ingenieria de Sistemas'\n);\nCREATE TABLE IF NOT EXISTS academico_demo.estado_fuentes (\n fuente text PRIMARY KEY, ultima_actualizacion_ok timestamptz, observacion text\n);\nINSERT INTO academico_demo.estado_fuentes(fuente,observacion)\nVALUES ('noticias_sistemas_unab','Categoria oficial de Ingenieria de Sistemas. Ultimas 20 publicaciones; no equivale a toda la oferta de cursos.')\nON CONFLICT (fuente) DO NOTHING;\nSELECT true AS preparado;",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "UfHFFAGTlup2wpyy",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "4b62f4e6-07c4-42ae-947e-4ba9d52b6680",
+      "name": "Descargar noticias de Sistemas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        496,
+        224
+      ],
+      "parameters": {
+        "url": "https://unab.edu.co/wp-json/wp/v2/posts",
+        "method": "GET",
+        "authentication": "none",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "categories",
+              "value": "556"
+            },
+            {
+              "name": "per_page",
+              "value": "20"
+            },
+            {
+              "name": "orderby",
+              "value": "date"
+            },
+            {
+              "name": "order",
+              "value": "desc"
+            },
+            {
+              "name": "_fields",
+              "value": "id,date_gmt,modified_gmt,link,title,excerpt,categories"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "3119f994-6bdc-48d4-9a1a-8051e880dcfa",
+      "name": "Preparar HTML de cada noticia",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        720,
+        224
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "html-noticia",
+              "name": "data",
+              "value": "={{ '<h1>' + $json.title.rendered + '</h1><section>' + $json.excerpt.rendered + '</section>' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "45940c5f-71c3-4777-a2c6-955200de29f7",
+      "name": "Extraer titulo y resumen",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        944,
+        224
+      ],
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "sourceData": "json",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "titulo",
+              "cssSelector": "h1",
+              "returnValue": "text"
+            },
+            {
+              "key": "resumen",
+              "cssSelector": "section",
+              "returnValue": "text",
+              "skipSelectors": "script,style"
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true,
+          "cleanUpText": false
+        }
+      }
+    },
+    {
+      "id": "8e876e09-fb55-4493-85dd-ecc6dc55a3fa",
+      "name": "Guardar noticias sin duplicados",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        1024,
+        224
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO academico_demo.noticias(wp_id,titulo,resumen,url,publicada_en,modificada_en,consultada_en)\nSELECT $1::bigint,left(regexp_replace(trim($2::text),'[[:space:]]+',' ','g'),500),left(regexp_replace(trim($3::text),'[[:space:]]+',' ','g'),500),$4::text,$5::timestamptz,$6::timestamptz,now()\nWHERE $5::timestamptz<=now()\nON CONFLICT (wp_id) DO UPDATE SET titulo=excluded.titulo,resumen=excluded.resumen,url=excluded.url,\npublicada_en=excluded.publicada_en,modificada_en=excluded.modificada_en,consultada_en=now()\nRETURNING wp_id,titulo,url,publicada_en;",
+        "options": {
+          "queryBatching": "independently",
+          "queryReplacement": "={{ [$('Descargar noticias de Sistemas').item.json.id, $json.titulo, $json.resumen, $('Descargar noticias de Sistemas').item.json.link, $('Descargar noticias de Sistemas').item.json.date_gmt + 'Z', $('Descargar noticias de Sistemas').item.json.modified_gmt + 'Z'] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "UfHFFAGTlup2wpyy",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "3d65e74c-114f-4922-af6c-016988547177",
+      "name": "Registrar actualizacion completada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        1248,
+        224
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE academico_demo.estado_fuentes SET ultima_actualizacion_ok=now() WHERE fuente='noticias_sistemas_unab';\nSELECT count(*) AS noticias_guardadas,max(consultada_en) AS ultima_consulta,max(publicada_en) AS publicacion_mas_reciente FROM academico_demo.noticias;",
+        "options": {}
+      },
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "UfHFFAGTlup2wpyy",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "bf91252f-8727-4f95-84d0-641ff9c790ca",
+      "name": "Noticias cada dia a las 08",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 8,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Actualizar noticias ahora": {
+      "main": [
+        [
+          {
+            "node": "Preparar almacenamiento de noticias",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar almacenamiento de noticias": {
+      "main": [
+        [
+          {
+            "node": "Descargar noticias de Sistemas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar noticias de Sistemas": {
+      "main": [
+        [
+          {
+            "node": "Preparar HTML de cada noticia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar HTML de cada noticia": {
+      "main": [
+        [
+          {
+            "node": "Extraer titulo y resumen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer titulo y resumen": {
+      "main": [
+        [
+          {
+            "node": "Guardar noticias sin duplicados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar noticias sin duplicados": {
+      "main": [
+        [
+          {
+            "node": "Registrar actualizacion completada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Noticias cada dia a las 08": {
+      "main": [
+        [
+          {
+            "node": "Preparar almacenamiento de noticias",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "America/Bogota",
+    "executionTimeout": 120
+  },
+  "nodeGroups": [
+    {
+      "id": "f9f92356-a2d4-4c09-8c5c-7aa14f74de02",
+      "name": "Consultar fuente oficial",
+      "nodeNames": [
+        "Descargar noticias de Sistemas",
+        "Preparar HTML de cada noticia",
+        "Extraer titulo y resumen"
+      ],
+      "description": "Lee las ultimas publicaciones de Sistemas de la UNAB y extrae titulo y resumen sin etiquetas HTML."
+    },
+    {
+      "id": "f22fc172-1b9d-42f2-8c04-921044d47505",
+      "name": "Guardar y verificar",
+      "nodeNames": [
+        "Guardar noticias sin duplicados",
+        "Registrar actualizacion completada"
+      ],
+      "description": "Actualiza por identificador para evitar duplicados y registra la ultima sincronizacion exitosa."
+    }
+  ]
+}

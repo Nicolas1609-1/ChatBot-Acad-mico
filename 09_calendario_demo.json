@@ -1,0 +1,108 @@
+{
+  "name": "Sistemas - Preparar calendario DEMO",
+  "nodes": [
+    {
+      "id": "c737b691-e64b-40ed-bf24-61b66bc84efa",
+      "name": "Crear calendario una sola vez",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "c0080772-b06e-44fa-a1c0-907f8cc95a8a",
+      "name": "Preparar seis eventos ficticios",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        400,
+        300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM jsonb_to_recordset('[{\"evento_id\":\"CAL001\",\"periodo\":\"2027-1\",\"evento\":\"Inscripcion de asignaturas\",\"fecha_inicio\":\"2027-01-11\",\"fecha_fin\":\"2027-01-22\",\"tipo\":\"matricula\",\"programa\":\"Ingenieria de Sistemas\",\"fuente\":\"Datos sinteticos del prototipo; NO OFICIAL\"},{\"evento_id\":\"CAL002\",\"periodo\":\"2027-1\",\"evento\":\"Prueba diagnostica de competencias digitales\",\"fecha_inicio\":\"2027-01-20\",\"fecha_fin\":\"2027-01-22\",\"tipo\":\"diagnostico\",\"programa\":\"Ingenieria de Sistemas\",\"fuente\":\"Datos sinteticos del prototipo; NO OFICIAL\"},{\"evento_id\":\"CAL003\",\"periodo\":\"2027-1\",\"evento\":\"Inicio de clases\",\"fecha_inicio\":\"2027-01-25\",\"fecha_fin\":\"2027-01-25\",\"tipo\":\"clases\",\"programa\":\"Ingenieria de Sistemas\",\"fuente\":\"Datos sinteticos del prototipo; NO OFICIAL\"},{\"evento_id\":\"CAL004\",\"periodo\":\"2027-1\",\"evento\":\"Ajustes de matricula\",\"fecha_inicio\":\"2027-01-25\",\"fecha_fin\":\"2027-01-29\",\"tipo\":\"matricula\",\"programa\":\"Ingenieria de Sistemas\",\"fuente\":\"Datos sinteticos del prototipo; NO OFICIAL\"},{\"evento_id\":\"CAL005\",\"periodo\":\"2027-1\",\"evento\":\"Inicio de curso de competencias digitales\",\"fecha_inicio\":\"2027-02-01\",\"fecha_fin\":\"2027-02-01\",\"tipo\":\"competencias\",\"programa\":\"Ingenieria de Sistemas\",\"fuente\":\"Datos sinteticos del prototipo; NO OFICIAL\"},{\"evento_id\":\"CAL006\",\"periodo\":\"2027-1\",\"evento\":\"Fin de clases\",\"fecha_inicio\":\"2027-05-28\",\"fecha_fin\":\"2027-05-28\",\"tipo\":\"clases\",\"programa\":\"Ingenieria de Sistemas\",\"fuente\":\"Datos sinteticos del prototipo; NO OFICIAL\"}]'::jsonb) AS x(evento_id text,periodo text,evento text,fecha_inicio text,fecha_fin text,tipo text,programa text,fuente text);",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "UfHFFAGTlup2wpyy",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "ae0671ac-2c42-42b9-ac21-9374c524c286",
+      "name": "Escribir calendario DEMO",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        650,
+        300
+      ],
+      "parameters": {
+        "resource": "sheet",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1ett973VG0v2ZDECB9kYR8OO-T8kfz3pddtKPnYPidBE",
+          "cachedResultName": "Calendario DEMO - NO OFICIAL"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1897915559",
+          "cachedResultName": "Calendario DEMO"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "schema": []
+        },
+        "options": {
+          "cellFormat": "RAW",
+          "handlingExtraData": "insertInNewColumn"
+        }
+      },
+      "disabled": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bqFGVX8UmIy1B78w",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Crear calendario una sola vez": {
+      "main": [
+        [
+          {
+            "node": "Preparar seis eventos ficticios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar seis eventos ficticios": {
+      "main": [
+        [
+          {
+            "node": "Escribir calendario DEMO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "nodeGroups": []
+}
