@@ -167,7 +167,7 @@ El proxy antepone el código del perfil a cada mensaje y las herramientas SQL **
 
 ### 6.1 El agente en n8n (`Chatbot Academico`)
 
-Un único flujo de 19 nodos. El **AI Agent** recibe un *system prompt* con reglas por herramienta y elige cuál llamar según la pregunta (no hay un clasificador aparte: el *tool calling* del modelo hace el ruteo).
+Un único flujo de 21 nodos. El **AI Agent** recibe un *system prompt* con reglas por herramienta y elige cuál llamar según la pregunta (no hay un clasificador aparte: el *tool calling* del modelo hace el ruteo).
 
 | Herramienta | Tipo de nodo | Qué devuelve |
 |---|---|---|
@@ -257,7 +257,8 @@ Archivos: [`ingesta_rag.json`](n8n/ingesta_rag.json) (flujo de indexación), [`0
 
 - **Entrada**: rechaza mensajes vacíos, de más de 6000 caracteres o que contengan claves de API conocidas (`gsk_`, `sk-proj-`, …).
 - **Salida**: bloquea claves y contenido `<script>` / `javascript:`.
-- **Errores**: si Groq falla o llega a su límite, el agente sale por una rama de error que responde un mensaje claro, **sin inventar datos**.
+- **Reintento automático**: si Groq falla o llega a su límite, la rama de error del agente pasa por un nodo *If* (`¿primer intento?`) y un *Wait* de 45 s, y vuelve a llamar al agente **una sola vez**. Funciona igual para la web y la app, sin tocar el servidor.
+- **Errores**: si el reintento también falla, responde un mensaje claro, **sin inventar datos**.
 
 ### 6.7 Portal web y proxy
 
@@ -291,7 +292,7 @@ Esta sección es la más útil para aprender: el bot "funcionaba", pero al revis
 | "¿Qué puedo matricular el próximo semestre?" daba 4 respuestas distintas; una decía "te quedan 5 créditos" | `prerrequisitos_cumplidos` mira solo lo ya aprobado, y el modelo restaba los créditos en curso al semestre siguiente | Para el *próximo* semestre se usa el periodo 2 de la proyección (que supone aprobar lo que está en curso) |
 | Respondía el promedio desde la memoria y calculaba "≈ 55 de 110" (eran 54) | La memoria guarda también el resultado JSON de las herramientas | Regla "llama la herramienta en ESTE turno" + historial limitado a 1200 tokens |
 | Noticias reales etiquetadas como "simuladas" | El prompt general decía que todo era simulado | Excepción explícita para noticias |
-| 4 de 30 ejecuciones devolvieron "servicio no disponible" | Límite de Groq: 8000 tokens/minuto y cada pregunta usa ~3000–6000 | Rama de error clara + reintento automático en la app |
+| 4 de 30 ejecuciones devolvieron "servicio no disponible" | Límite de Groq: 8000 tokens/minuto y cada pregunta usa ~3000–6000 | Rama de error clara + reintento automático dentro de n8n (espera 45 s y repite una vez) |
 
 **Moraleja:** `status: success` en n8n solo significa que el flujo terminó, no que la respuesta sea correcta. Hay que leer las salidas reales.
 

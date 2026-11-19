@@ -4,10 +4,10 @@
     "name": "Chatbot Academico",
     "active": true,
     "isArchived": false,
-    "versionId": "5522aab4-34cc-4079-a991-074f547bec79",
-    "activeVersionId": "5522aab4-34cc-4079-a991-074f547bec79",
+    "versionId": "bf239077-8706-4aef-b02c-361c137e7dd5",
+    "activeVersionId": "bf239077-8706-4aef-b02c-361c137e7dd5",
     "triggerCount": 2,
-    "nodeCount": 19,
+    "nodeCount": 21,
     "createdAt": "2026-11-13T17:18:46.385Z",
     "updatedAt": "2026-11-15T13:25:04.883Z",
     "settings": {
@@ -150,7 +150,7 @@
           ],
           [
             {
-              "node": "Servicio temporalmente no disponible",
+              "node": "Primer intento?",
               "type": "main",
               "index": 0
             }
@@ -214,6 +214,35 @@
             {
               "node": "AI Agent",
               "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Primer intento?": {
+        "main": [
+          [
+            {
+              "node": "Esperar cuota Groq",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Servicio temporalmente no disponible",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Esperar cuota Groq": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
               "index": 0
             }
           ]
@@ -312,7 +341,7 @@
           "operation": "executeQuery",
           "query": "SELECT 'Datos sinteticos; plan de demostracion no oficial' AS fuente,\nupper(trim($1::text)) AS codigo_solicitado,\n(SELECT (to_jsonb(r)-'codigo')||jsonb_build_object('codigo',upper(trim($1::text))) || jsonb_build_object('porcentaje_avance',round(100.0*r.creditos_aprobados/nullif(r.creditos_plan,0),2),'minimo_semestres_por_creditos',ceil((r.creditos_plan-r.creditos_aprobados)/18.0)) FROM academico_demo.v_resumen r WHERE r.codigo=(SELECT codigo FROM academico_demo.estudiantes WHERE codigo_institucional=upper(trim($1::text)))) AS resumen,\nCASE WHEN $2::text IN ('historial','completo') THEN coalesce((SELECT jsonb_agg(to_jsonb(t) ORDER BY t.semestre,t.materia,t.periodo) FROM\n(SELECT h.periodo,h.materia,m.nombre,m.semestre,m.creditos,h.nota,h.estado FROM academico_demo.historial h JOIN academico_demo.materias m ON m.codigo=h.materia WHERE h.estudiante=(SELECT codigo FROM academico_demo.estudiantes WHERE codigo_institucional=upper(trim($1::text)))) t),'[]'::jsonb) ELSE '[]'::jsonb END AS historial,\nCASE WHEN $2::text IN ('pendientes','completo') THEN coalesce((SELECT jsonb_agg(to_jsonb(p)-'estudiante' ORDER BY p.semestre,p.materia) FROM academico_demo.v_materias_pendientes p WHERE p.estudiante=(SELECT codigo FROM academico_demo.estudiantes WHERE codigo_institucional=upper(trim($1::text)))),'[]'::jsonb) ELSE '[]'::jsonb END AS pendientes;",
           "options": {
-            "queryReplacement": "={{ [($('When chat message received').item.json.chatInput.match(/^Perfil seleccionado: (U00[0-9]{6})\\n/)?.[1] || $fromAI('codigo_estudiante', 'Codigo U00 seguido por seis numeros, dado por el estudiante.', 'string')), $fromAI('detalle', 'Elegir resumen para promedio/avance/matricula; historial para notas; pendientes para recomendaciones/prerrequisitos; completo solo si pide ambos.', 'string', 'resumen')] }}"
+            "queryReplacement": "={{ [($('When chat message received').first().json.chatInput.match(/^Perfil seleccionado: (U00[0-9]{6})\\n/)?.[1] || $fromAI('codigo_estudiante', 'Codigo U00 seguido por seis numeros, dado por el estudiante.', 'string')), $fromAI('detalle', 'Elegir resumen para promedio/avance/matricula; historial para notas; pendientes para recomendaciones/prerrequisitos; completo solo si pide ambos.', 'string', 'resumen')] }}"
           }
         },
         "id": "9a10f32d-6fc6-47ab-8854-d54b4f335215",
@@ -385,7 +414,7 @@
           "operation": "executeQuery",
           "query": "SELECT (SELECT (to_jsonb(r)-'codigo')||jsonb_build_object('codigo',upper(trim($1::text))) FROM academico_demo.v_resumen r WHERE r.codigo=(SELECT codigo FROM academico_demo.estudiantes WHERE codigo_institucional=upper(trim($1::text)))) AS resumen, academico_demo.proyectar_semestres((SELECT codigo FROM academico_demo.estudiantes WHERE codigo_institucional=upper(trim($1::text))),18) || jsonb_build_object('codigo',upper(trim($1::text))) AS proyeccion;",
           "options": {
-            "queryReplacement": "={{ [($('When chat message received').item.json.chatInput.match(/^Perfil seleccionado: (U00[0-9]{6})\\n/)?.[1] || $fromAI('codigo_estudiante', 'Codigo U00 seguido por seis numeros, dado por el estudiante.', 'string'))] }}"
+            "queryReplacement": "={{ [($('When chat message received').first().json.chatInput.match(/^Perfil seleccionado: (U00[0-9]{6})\\n/)?.[1] || $fromAI('codigo_estudiante', 'Codigo U00 seguido por seis numeros, dado por el estudiante.', 'string'))] }}"
           }
         },
         "id": "162a5bdc-0a2c-4a7f-89a2-ed9922e2dc50",
@@ -693,33 +722,59 @@
             "name": "Bearer Auth account"
           }
         }
-      }
-    ],
-    "nodeGroups": [
+      },
       {
-        "id": "359859a7-c391-40a8-bb86-a264c1372303",
-        "name": "Asistente academico con validacion",
-        "nodeNames": [
-          "AI Agent",
-          "OpenAI Chat Model",
-          "Postgres Chat Memory",
-          "Consultar expediente",
-          "Buscar documentos academicos",
-          "Embeddings para consultas",
-          "Proyectar semestres",
-          "Validar consulta",
-          "Validar respuesta",
-          "Consulta rechazada",
-          "Respuesta protegida",
-          "Restaurar contexto del chat",
-          "Entregar respuesta validada",
-          "Consultar calendario DEMO",
-          "Servicio temporalmente no disponible",
-          "MCP academico"
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "primer-intento",
+                "leftValue": "={{ $runIndex }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "number",
+                  "operation": "equals"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          400,
+          144
         ],
-        "description": "Chat, fuentes, validacion y cliente FastMCP autenticado; plan y noticias via MCP."
+        "id": "3e4af0a2-045e-40f8-b8e9-13dd56b1c473",
+        "name": "Primer intento?",
+        "notes": "Solo reintenta una vez: $runIndex 0 = primera falla."
+      },
+      {
+        "parameters": {
+          "resume": "timeInterval",
+          "amount": 45,
+          "unit": "seconds"
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          400,
+          -64
+        ],
+        "id": "ec85da20-5b2a-4c1c-a4dd-15f761974f42",
+        "name": "Esperar cuota Groq",
+        "notes": "Groq permite 8000 tokens/minuto; 45 s libera cuota suficiente para un reintento tras una rafaga."
       }
     ],
+    "nodeGroups": [],
     "activeVersion": {
       "sameAsDraft": true
     },
