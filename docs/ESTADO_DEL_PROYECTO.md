@@ -63,3 +63,4 @@ Credencial Bearer Auth validada por n8n. Cliente MCP habilitado y flujo principa
 - Video de demostracion grabado sobre el portal real (U00100012, seis preguntas, ~3 min): docs/video/demo-chatbot-academico.mp4. README con capturas en docs/img.
 - 19/11: el calendario cita siempre el enlace de la hoja (version 5522aab4). Repositorio: github.com/Nicolas1609-1/ChatBot-Acad-mico.
 - 19/11: reintento automatico en n8n (If + Wait 45 s, una vez) ante limite de Groq; herramientas personales leen el perfil con first(). Version bf239077. Probado: rafaga de 5 preguntas, la 5a se recupero sola en 54 s con datos correctos.
+- 20/11: evidencias de la app movil (5 capturas reales con U00100012) en docs/img/09-13 y en el README.

@@ -282,6 +282,14 @@ npm install
 npx expo start   # escanea el QR con Expo Go
 ```
 
+**Evidencias de la app** (capturas reales con el estudiante Mateo, `U00100012`):
+
+| Entrada | Panel | Estado académico | Matrícula | Calendario |
+|---|---|---|---|---|
+| ![Entrada app](docs/img/09-app-entrada.png) | ![Panel app](docs/img/10-app-panel.png) | ![Estado app](docs/img/11-app-estado.png) | ![Matrícula app](docs/img/12-app-matricula.png) | ![Calendario app](docs/img/13-app-calendario.png) |
+
+Los atajos envían preguntas predefinidas al mismo agente de n8n que usa la web; las respuestas con tablas se pueden deslizar hacia los lados.
+
 ## 7. Lecciones aprendidas (lo que salió mal y cómo se corrigió)
 
 Esta sección es la más útil para aprender: el bot "funcionaba", pero al revisar las ejecuciones aparecieron errores que **n8n marcaba como exitosos**.
